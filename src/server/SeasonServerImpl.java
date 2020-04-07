@@ -31,7 +31,7 @@ Software Engineering, CIDSE, IAFSE, ASU Poly
 * @version April 2020
 */
 
-public class SeasonServerImpl extends Object implements SeasonLibrary{
+public class SeasonServerImpl extends Object implements SeasonServer{
 
    private Hashtable<String,SeriesSeason> aLib;
    private static final String fileName="series.json";

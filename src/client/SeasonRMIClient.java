@@ -1,3 +1,4 @@
+
 /**
  * This module acts as the View layer for your application.
  * The 'MediaLibraryGui' class actually builds the Gui with all

@@ -1,4 +1,4 @@
-<project name="Ser321 Spring 2020 Assign2" default="targets" basedir=".">
+<project name="Ser321 Spring 2020 Assign3" default="targets" basedir=".">
 
    <!-- define tasks used in the prepare task for platform identification -->
    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
@@ -108,7 +108,7 @@
 
    <target name="compile" depends="setup.javafx"
            description="Compile Java sources">
-      <javac srcdir="${src}/client"
+      <javac srcdir="${src}"
              includeantruntime="false"
              destdir="${build}">
          <classpath refid="compile.classpath"/>
@@ -128,8 +128,9 @@
 
   <target name="client" depends="compile"
            description="Start client">
+	<echo message="user.dir is: ${user.dir}"/>
 	<echo message="command line client: java -cp classes - RMIClient ${hostId} ${regPort}" />
-      <java classname="ser321.assign2.lindquis.SeasonRMIClient"
+      <java classname="SeasonRMIClient"
             fork="yes">
          <arg value="${userId}"/> 
          <arg value="${omdbkey}"/> 
@@ -150,7 +151,7 @@
        </exec>
 	<sequential>
 	  <sleep seconds="10"/>
-	  <java classname="ser321.assign2.lindquis.SeasonServerImpl"
+	  <java classname="ser321.assign3.bgarci42.server.SeasonServerImpl"
 		    fork="yes">
     		 <sysproperty key="java.rmi.server.hostname" value="${hostId}"/>
 		 <arg value="${hostId}"/> 
@@ -160,6 +161,7 @@
 		 <classpath refid="compile.classpath"/>
 		 <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
 	      </java>
+	 </sequential>
     </parallel>
    </target>
 
