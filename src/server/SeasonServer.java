@@ -22,7 +22,7 @@
  *         Software Engineering, CIDSE, IAFSE, ASU Poly
  * @version January 2020
  */
-public interface SeasonLibrary {
+public interface SeasonServer {
    public String[] getAllSeriesSeasonTitles();
    public SeriesSeason getSeriesSeason(String seriesTitle);
    public boolean addSeriesSeason(SeriesSeason seriesSeasonToAdd);  //may need to input strings and use getter?

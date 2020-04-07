@@ -61,7 +61,7 @@ Software Engineering, CIDSE, IAFSE, ASU Poly
 */
 
 //SAVING THIS HERE
-public class MediaLibraryApp extends MediaLibraryGui implements
+public class SeasonRMIClient extends MediaLibraryGui implements
 TreeWillExpandListener,
 ActionListener,
 TreeSelectionListener {
@@ -71,21 +71,21 @@ TreeSelectionListener {
 	private static String urlOMBD;
 	private String url;
 	//private MediaLibrary library;
-	private SeasonLibrary library;
-	private SeasonLibrary sLibrary;
+	private SeasonServer library;
+	private SeasonServer sLibrary;
 	private String omdbKey;
         private SeriesSeason seriesSeason;
         private Episodes episodes;
 	//private SeasonLibrary s
 	private boolean searched;
 
-	public MediaLibraryApp(String author, String authorKey) {
+	public SeasonRMIClient(String author, String authorKey) {
         // sets the value of 'author' on the title window of the GUI.
 		super(author);
 		this.omdbKey = authorKey;
 		urlOMBD = pre + authorKey + "&t=";
 		//library = new MediaLibraryImpl(); // TODO: this would need to be your SeriesLibraryImpl
-		library = new SeasonLibraryImpl();
+		library = new SeasonServerImpl();
 
 		// register this object as an action listener for menu item clicks. This will cause
 		// my actionPerformed method to be called every time the user selects a menuitem.
@@ -401,7 +401,7 @@ TreeSelectionListener {
 			 */
 
 			//Second library to serialize and save temporary search data
-			sLibrary = new SeasonLibraryImpl();
+			sLibrary = new SeasonServerImpl();
 			sLibrary.addSeriesSeason(seriesSeason);
 			
 			tree.removeTreeSelectionListener(this);
@@ -533,7 +533,7 @@ TreeSelectionListener {
 		}
 		try{
 			//System.out.println("calling constructor name "+name);
-			MediaLibraryApp mla = new MediaLibraryApp(name,key);
+			SeasonRMIClient src = new SeasonRMIClient(name,key);
 		}catch (Exception ex){
 			ex.printStackTrace();
 		}

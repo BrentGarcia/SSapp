@@ -21,7 +21,7 @@ Engineering program evaluation,
 use.
 * All other uses are prohibited and reserved to the author.
 *
-* Purpose: An SeasonLibrary class for serializing between client and server.
+* Purpose: An SeasonServer class for serializing between client and server.
 *
 * Ser321 Principles of Distributed Software Systems
 * see http://pooh.poly.asu.edu/Ser321
@@ -31,12 +31,12 @@ Software Engineering, CIDSE, IAFSE, ASU Poly
 * @version April 2020
 */
 
-public class SeasonLibraryImpl extends Object implements SeasonLibrary{
+public class SeasonServerImpl extends Object implements SeasonLibrary{
 
    private Hashtable<String,SeriesSeason> aLib;
    private static final String fileName="series.json";
    
-   public SeasonLibraryImpl () {
+   public SeasonServerImpl () {
      this.aLib = new Hashtable<String,SeriesSeason>();
      try{
          InputStream is = this.getClass().getClassLoader().getResourceAsStream(this.fileName);
@@ -148,7 +148,7 @@ public class SeasonLibraryImpl extends Object implements SeasonLibrary{
 
    //Restores library to state of series.json
    public boolean restoreLibraryFromFile(){
-	SeasonLibraryImpl tempSLibrary = new SeasonLibraryImpl();
+	SeasonServerImpl tempSLibrary = new SeasonServerImpl();
 	this.aLib = tempSLibrary.getHashTable();
    	return true;
    }
