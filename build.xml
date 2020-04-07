@@ -12,6 +12,8 @@
    <property name="parentDir" value="${user.dir}${file.separator}" />
    <property name="javafxhome" value="javafx-sdk-13.0.1/"/>
    <property name="javafx-lib-home" value="${javafxhome}lib"/>
+   <property name="hostId" value="localhost" />
+   <property name="regPort" value="1099" />
 
    <path id="compile.classpath">
       <pathelement location="${build}"/>
@@ -31,8 +33,20 @@
       </fileset>
    </path>
 
-   <target name="targets">
-      <echo message="targets are clean, prepare, setup.javafx, compile, and sample. "/>
+   <target name="checkos">
+	<condition property="os" value="windows">
+		<os family="windows" />
+	</condition>
+	<condition property="os" value="unix">
+		<os family="unix" />
+	</condition>
+	<condition property="os" value="mac">
+		<os family="mac" />
+	</condition>
+   </target>
+
+   <target name="targets" depends="checkos">
+      <echo message="targets are clean, prepare, compile, server, client. "/>
       <echo message="to run enter: ant execute -Domdbkey=${omdbkey} -DuserId=${userId} "/>
    </target>
 
@@ -110,6 +124,43 @@
          <classpath refid="compile.classpath"/>
          <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
       </java>
+   </target>
+
+  <target name="client" depends="compile"
+           description="Start client">
+	<echo message="command line client: java -cp classes - RMIClient ${hostId} ${regPort}" />
+      <java classname="ser321.assign2.lindquis.SeasonRMIClient"
+            fork="yes">
+         <arg value="${userId}"/> 
+         <arg value="${omdbkey}"/> 
+	 <arg value="${hostId}"/> 
+         <arg value="${regPort}"/>
+         <classpath refid="compile.classpath"/>
+         <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
+      </java>
+   </target>
+
+   <target name="server" depends="compile"
+           description="Using parallel task, start server and client">
+    <parallel>
+	<exec dir="${basedir}"
+             executable="rmiregistry">
+         <arg value="${regPort}"/>
+         <env key="CLASSPATH" path="${basedir}/${build}"/>
+       </exec>
+	<sequential>
+	  <sleep seconds="10"/>
+	  <java classname="ser321.assign2.lindquis.SeasonServerImpl"
+		    fork="yes">
+    		 <sysproperty key="java.rmi.server.hostname" value="${hostId}"/>
+		 <arg value="${hostId}"/> 
+           	 <arg value="${regPort}"/>
+		 <arg value="${userId}"/> 
+		 <arg value="${omdbkey}"/> 
+		 <classpath refid="compile.classpath"/>
+		 <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
+	      </java>
+    </parallel>
    </target>
 
    <target name="clean">
