@@ -1,4 +1,6 @@
 
+import java.rmi.*;
+
 /**
  * Copyright 2020 Brent Garcia,
  *
@@ -22,12 +24,12 @@
  *         Software Engineering, CIDSE, IAFSE, ASU Poly
  * @version January 2020
  */
-public interface SeasonServer {
-   public String[] getAllSeriesSeasonTitles();
-   public SeriesSeason getSeriesSeason(String seriesTitle);
-   public boolean addSeriesSeason(SeriesSeason seriesSeasonToAdd);  //may need to input strings and use getter?
-   public boolean removeSeriesSeason(SeriesSeason seriesSeasonToRemove); // Same
+public interface SeasonServer extends Remote {
+   public String[] getAllSeriesSeasonTitles() throws RemoteException;
+   public SeriesSeason getSeriesSeason(String seriesTitle) throws RemoteException;
+   public boolean addSeriesSeason(SeriesSeason seriesSeasonToAdd) throws RemoteException;  //may need to input strings and use getter?
+   public boolean removeSeriesSeason(SeriesSeason seriesSeasonToRemove) throws RemoteException; // Same
    
-   public boolean saveLibraryToFile();
-   public boolean restoreLibraryFromFile(); 
+   public boolean saveLibraryToFile() throws RemoteException;
+   public boolean restoreLibraryFromFile() throws RemoteException; 
 }

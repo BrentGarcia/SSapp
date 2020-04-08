@@ -151,7 +151,7 @@
        </exec>
 	<sequential>
 	  <sleep seconds="10"/>
-	  <java classname="ser321.assign3.bgarci42.server.SeasonServerImpl"
+	  <java classname="SeasonServerImpl"
 		    fork="yes">
     		 <sysproperty key="java.rmi.server.hostname" value="${hostId}"/>
 		 <arg value="${hostId}"/> 

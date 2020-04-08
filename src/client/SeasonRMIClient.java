@@ -9,6 +9,7 @@
  * functionality.
  */
 
+import java.rmi.*;
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.Paths;
@@ -82,11 +83,17 @@ TreeSelectionListener {
 
 	public SeasonRMIClient(String author, String authorKey) {
         // sets the value of 'author' on the title window of the GUI.
+			
 		super(author);
 		this.omdbKey = authorKey;
 		urlOMBD = pre + authorKey + "&t=";
+		String hostId="localhost";
+         	String regPort="1099";
 		//library = new MediaLibraryImpl(); // TODO: this would need to be your SeriesLibraryImpl
-		library = new SeasonServerImpl();
+		try{	
+		//library = new SeasonServerImpl();
+		library = (SeasonServer)Naming.lookup(
+                             "rmi://"+hostId+":"+regPort+"/SeasonServer");
 
 		// register this object as an action listener for menu item clicks. This will cause
 		// my actionPerformed method to be called every time the user selects a menuitem.
@@ -98,7 +105,7 @@ TreeSelectionListener {
 		// register this object as an action listener for the Search button. This will cause
 		// my actionPerformed method to be called every time the user clicks the Search button
 		searchJButt.addActionListener(this);
-		try{
+		
 			//tree.addTreeWillExpandListener(this);  // add if you want to get called with expansion/contract
 			tree.addTreeSelectionListener(this);
 			rebuildTree();
@@ -170,6 +177,7 @@ TreeSelectionListener {
 	 * getSubLabelled which is defined in the GUI/view class.
 	 **/
 	public void rebuildTree(){
+	  try{
 		tree.removeTreeSelectionListener(this);
 		DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
@@ -214,6 +222,10 @@ TreeSelectionListener {
 			tree.expandRow(r);
 		}
 		tree.addTreeSelectionListener(this);
+            } catch (Exception ex){
+                 System.out.println("Exception in rebuildTree():");
+	         ex.printStackTrace();
+	    }
 	}
 
     /**
@@ -343,23 +355,33 @@ TreeSelectionListener {
 	}
 	
 	
-	// TODO: this is where you will need to implement a bunch. So when some action is called the correct thing happens
+	// TODO: this is where you will need to implement a bunch. So when some action is called the correct thing happens	
 	public void actionPerformed(ActionEvent e) {
 		tree.removeTreeSelectionListener(this);
 		if(e.getActionCommand().equals("Exit")) {
 			System.exit(0);
 		}else if(e.getActionCommand().equals("Save")) {
-			boolean savRes = false;
-			savRes = library.saveLibraryToFile();
-			System.out.println("Save "+((savRes)?"successful":"not implemented"));
+		    try {
+			    boolean savRes = false;
+			    savRes = library.saveLibraryToFile();
+			    System.out.println("Save "+((savRes)?"successful":"not implemented"));
+		    } catch (Exception ex) {
+	   	    	System.out.println("Exception in actionperformed: Save:");
+			ex.printStackTrace();
+                    }
 		}else if(e.getActionCommand().equals("Restore")) {
+		    try {
 			boolean resRes = false;
 			resRes = library.restoreLibraryFromFile();
 			rebuildTree();
 			tree.removeTreeSelectionListener(this);			
 			System.out.println("Restore "+((resRes)?"successful":"not implemented"));
+                     } catch (Exception ex) {
+	   	    	System.out.println("Exception in actionperformed: Restore:");
+			ex.printStackTrace();
+                    }
 		}else if(e.getActionCommand().equals("Series-SeasonAdd")) {
-			
+		    try {
 			if (searched == true) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 				String nodeLabel = (String)node.getUserObject();
@@ -374,15 +396,13 @@ TreeSelectionListener {
 				rebuildTree();
 				tree.removeTreeSelectionListener(this);
 			}
+                     }
+		     catch (Exception ex) {
+	   	    	System.out.println("Exception in actionperformed: Add:");
+			ex.printStackTrace();
+                    }
 		}else if(e.getActionCommand().equals("Search")) { 
-            /*
-             * In the below API(s) the error response should be appropriately handled
-             */
-
-			// with all episodes only display this new series/season with the episodes in tree
-
-			// Doing a fetch two times so that we only get the full series info (with poster, summary, rating) once
-			// fetch series info
+            	   try{
 			String searchReqURL = urlOMBD+seriesSearchJTF.getText().replace(" ", "%20");
 			System.out.println("calling fetch with url: "+searchReqURL);
 			String json = fetchURL(searchReqURL);
@@ -400,7 +420,6 @@ TreeSelectionListener {
 			 * This should also then build the tree and display the info in the left side bar (so the new tree with its episodes)
 			 * right hand should display the Series information
 			 */
-
 			//Second library to serialize and save temporary search data
 			sLibrary = new SeasonServerImpl();
 			sLibrary.addSeriesSeason(seriesSeason);
@@ -437,11 +456,15 @@ TreeSelectionListener {
 				tree.expandRow(r);
 			}
 			searched = true;
+			} catch (Exception ex){
+				System.out.println("Exception in actionPerformed: search 					"+ex.getMessage()); 
+			}
 
 		}else if(e.getActionCommand().equals("Tree Refresh")) {
 			rebuildTree();
 			tree.removeTreeSelectionListener(this);
 		}else if(e.getActionCommand().equals("Series-SeasonRemove")) {
+		   try{
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 			String nodeLabel = (String)node.getUserObject();
 			if (node.getChildCount()==0 &&
@@ -459,8 +482,14 @@ TreeSelectionListener {
 			library.removeSeriesSeason(ssToRemove);
 			rebuildTree();
 			tree.removeTreeSelectionListener(this);
+                   }
+		   catch (Exception ex) {
+	   	        System.out.println("Exception in actionperformed: Remove:");
+			ex.printStackTrace();
+                   }
 		}
 		tree.addTreeSelectionListener(this);
+              
 	}
 
 	/**
@@ -526,6 +555,8 @@ TreeSelectionListener {
 	public static void main(String args[]) {
 		String name = "first.last";
 		String key = "use-your-last.ombd-key";
+		String hostId="localhost";
+         	String regPort="1099";
 		if (args.length >= 2){
 			//System.out.println("java -cp classes:lib/json.lib ser321.assign2.lindquist."+
 			//                   "MediaLibraryApp \"Lindquist Music Library\" lastFM-Key");

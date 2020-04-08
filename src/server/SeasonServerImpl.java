@@ -5,6 +5,8 @@ import java.net.URL;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONTokener;
+import java.rmi.server.*;
+import java.rmi.*;
 
 /*
 * Copyright 2020 Brent Garcia,
@@ -31,12 +33,12 @@ Software Engineering, CIDSE, IAFSE, ASU Poly
 * @version April 2020
 */
 
-public class SeasonServerImpl extends Object implements SeasonServer{
+public class SeasonServerImpl extends UnicastRemoteObject implements SeasonServer{
 
    private Hashtable<String,SeriesSeason> aLib;
    private static final String fileName="series.json";
    
-   public SeasonServerImpl () {
+   public SeasonServerImpl () throws RemoteException {
      this.aLib = new Hashtable<String,SeriesSeason>();
      try{
          InputStream is = this.getClass().getClassLoader().getResourceAsStream(this.fileName);
@@ -62,7 +64,7 @@ public class SeasonServerImpl extends Object implements SeasonServer{
    }
 
    //Adds a season series to Library
-   public boolean addSeriesSeason(SeriesSeason seasonSeriesToAdd){ //May need string in arguments
+   public boolean addSeriesSeason(SeriesSeason seasonSeriesToAdd) throws RemoteException { //May need string in arguments
       boolean result = false;
       System.out.println("Adding: "+seasonSeriesToAdd.title);
       try{
@@ -75,7 +77,7 @@ public class SeasonServerImpl extends Object implements SeasonServer{
    }
 
    //Removes a season series from library
-   public boolean removeSeriesSeason(SeriesSeason seasonSeriesToRemove){
+   public boolean removeSeriesSeason(SeriesSeason seasonSeriesToRemove) throws RemoteException {
       boolean result = false;
       System.out.println("Removing "+seasonSeriesToRemove);
       try{
@@ -89,7 +91,7 @@ public class SeasonServerImpl extends Object implements SeasonServer{
 
 
    //Returns a SeriesSeason object from library based on title
-   public SeriesSeason getSeriesSeason(String seriesSeasonTitle){
+   public SeriesSeason getSeriesSeason(String seriesSeasonTitle) throws RemoteException{
       SeriesSeason result = null;
       try{
          result = aLib.get(seriesSeasonTitle);
@@ -100,7 +102,7 @@ public class SeasonServerImpl extends Object implements SeasonServer{
    }
 
    //Returns a String[] of all series season titles in library;
-   public String[] getAllSeriesSeasonTitles(){
+   public String[] getAllSeriesSeasonTitles() throws RemoteException {
       String[] result = null;
       try{
          Set<String> vec = aLib.keySet();
@@ -112,7 +114,7 @@ public class SeasonServerImpl extends Object implements SeasonServer{
    }
    
    //Saves current library to series.json
-   public boolean saveLibraryToFile(){
+   public boolean saveLibraryToFile() throws RemoteException {
 	try (FileWriter file = new FileWriter("series.json")){
 		JSONObject series = new JSONObject();
 
@@ -147,7 +149,7 @@ public class SeasonServerImpl extends Object implements SeasonServer{
    }
 
    //Restores library to state of series.json
-   public boolean restoreLibraryFromFile(){
+   public boolean restoreLibraryFromFile() throws RemoteException{
 	SeasonServerImpl tempSLibrary = new SeasonServerImpl();
 	this.aLib = tempSLibrary.getHashTable();
    	return true;
@@ -155,6 +157,24 @@ public class SeasonServerImpl extends Object implements SeasonServer{
 
    public Hashtable<String,SeriesSeason> getHashTable(){
 	return this.aLib;
+   }
+
+   public static void main(String args[]) {
+      try {
+         String hostId="localhost";
+         String regPort="1099";
+         if (args.length >= 2){
+	    hostId=args[0];
+            regPort=args[1];
+         }
+         //System.setSecurityManager(new RMISecurityManager()); // rmisecmgr 	deprecated
+         SeasonServer obj = new SeasonServerImpl();
+         Naming.rebind("rmi://"+hostId+":"+regPort+"/SeasonServer", obj);
+         System.out.println("Server bound in registry as: "+
+                            "rmi://"+hostId+":"+regPort+"/SeasonServer");
+      }catch (Exception e) {
+         e.printStackTrace();
+      }
    }
 
 }
