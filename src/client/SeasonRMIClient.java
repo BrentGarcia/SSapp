@@ -68,7 +68,7 @@ TreeWillExpandListener,
 ActionListener,
 TreeSelectionListener {
 
-	private static final boolean debugOn = true;
+	private static final boolean debugOn = false;
     	private static final String pre = "https://www.omdbapi.com/?apikey=";
 	private static String urlOMBD;
 	private String url;
@@ -392,9 +392,11 @@ TreeSelectionListener {
 				} 
 				SeriesSeason ss = sLibrary.getSeriesSeason(nodeLabel);
 				library.addSeriesSeason(ss);
+				System.out.println("Add successful");
 				searched = false;
 				rebuildTree();
 				tree.removeTreeSelectionListener(this);
+				
 			}
                      }
 		     catch (Exception ex) {
@@ -478,6 +480,7 @@ TreeSelectionListener {
 				int delimeter = nodeLabel.indexOf(":");
 				nodeLabel = nodeLabel.substring(0,delimeter);
 			}
+			System.out.println("Removing Series Season");
 			SeriesSeason ssToRemove = library.getSeriesSeason(nodeLabel);
 			library.removeSeriesSeason(ssToRemove);
 			rebuildTree();
