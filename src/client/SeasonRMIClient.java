@@ -83,7 +83,7 @@ TreeSelectionListener {
 
 	public SeasonRMIClient(String aHostId, String aRegPort, String author, String authorKey) {
         // sets the value of 'author' on the title window of the GUI.
-			
+		
 		super(author);
 		this.omdbKey = authorKey;
 		urlOMBD = pre + authorKey + "&t=";
@@ -565,9 +565,13 @@ TreeSelectionListener {
 			name = args[2];
 			key = args[3];
 		}
+		System.out.println("hostID = " +hostId);
+		System.out.println("regPort = " +regPort);
+		System.out.println("name = " +name);
+		System.out.println("key = " +key);
 		try{
 			//System.out.println("calling constructor name "+name);
-			SeasonRMIClient src = new SeasonRMIClient(regPort,hostId,name,key);
+			SeasonRMIClient src = new SeasonRMIClient(hostId,regPort,name,key);
 		}catch (Exception ex){
 			ex.printStackTrace();
 		}

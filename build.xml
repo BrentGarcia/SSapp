@@ -132,10 +132,10 @@
 	<echo message="command line client: java -cp classes - RMIClient ${hostId} ${regPort}" />
       <java classname="SeasonRMIClient"
             fork="yes">
+	 <arg value="${hostId}"/>
+	 <arg value="${regPort}"/>
          <arg value="${userId}"/> 
-         <arg value="${omdbkey}"/> 
-	 <arg value="${hostId}"/> 
-         <arg value="${regPort}"/>
+         <arg value="${omdbkey}"/>
          <classpath refid="compile.classpath"/>
          <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
       </java>
