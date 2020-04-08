@@ -81,14 +81,14 @@ TreeSelectionListener {
 	//private SeasonLibrary s
 	private boolean searched;
 
-	public SeasonRMIClient(String author, String authorKey) {
+	public SeasonRMIClient(String aHostId, String aRegPort, String author, String authorKey) {
         // sets the value of 'author' on the title window of the GUI.
 			
 		super(author);
 		this.omdbKey = authorKey;
 		urlOMBD = pre + authorKey + "&t=";
-		String hostId="localhost";
-         	String regPort="1099";
+		String hostId= aHostId;
+         	String regPort= aRegPort;
 		//library = new MediaLibraryImpl(); // TODO: this would need to be your SeriesLibraryImpl
 		try{	
 		//library = new SeasonServerImpl();
@@ -560,12 +560,14 @@ TreeSelectionListener {
 		if (args.length >= 2){
 			//System.out.println("java -cp classes:lib/json.lib ser321.assign2.lindquist."+
 			//                   "MediaLibraryApp \"Lindquist Music Library\" lastFM-Key");
-			name = args[0];
-			key = args[1];
+			hostId = args[0];
+			regPort = args[1];
+			name = args[2];
+			key = args[3];
 		}
 		try{
 			//System.out.println("calling constructor name "+name);
-			SeasonRMIClient src = new SeasonRMIClient(name,key);
+			SeasonRMIClient src = new SeasonRMIClient(regPort,hostId,name,key);
 		}catch (Exception ex){
 			ex.printStackTrace();
 		}

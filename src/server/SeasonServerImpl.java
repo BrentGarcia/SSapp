@@ -167,6 +167,7 @@ public class SeasonServerImpl extends UnicastRemoteObject implements SeasonServe
 	    hostId=args[0];
             regPort=args[1];
          }
+	System.out.println("args 0 = " + args[0]);
          //System.setSecurityManager(new RMISecurityManager()); // rmisecmgr 	deprecated
          SeasonServer obj = new SeasonServerImpl();
          Naming.rebind("rmi://"+hostId+":"+regPort+"/SeasonServer", obj);
