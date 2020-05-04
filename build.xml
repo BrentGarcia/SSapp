@@ -1,10 +1,13 @@
-<project name="Ser321 Spring 2020 Assign3" default="targets" basedir=".">
-
-   <!-- define tasks used in the prepare task for platform identification -->
+<?xml version="1.0"?>
+<project name="JsonRPC in CPP using libjson-rpc-cpp" default="targets" basedir=".">
+   <taskdef resource="cpptasks.tasks"/>
    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
-   <!-- set global properties for this build -->
-   <property name="src" value="./src" />
-   <property name="build" value="./classes" />
+   <property name="src.dir" value="src"/>
+   <property name="classes.dir" value="classes"/>
+   <property name="host" value="localhost"/>
+   <property name="port" value="1099"/>
+   <property environment="env"/>
+   
    <property name="docs" value="./docs" />
    <property name="lib" value="./lib" />
    <property name="userId" value="first.lastname" />
@@ -12,11 +15,20 @@
    <property name="parentDir" value="${user.dir}${file.separator}" />
    <property name="javafxhome" value="javafx-sdk-13.0.1/"/>
    <property name="javafx-lib-home" value="${javafxhome}lib"/>
-   <property name="hostId" value="localhost" />
-   <property name="regPort" value="1099" />
+
+
+   <!--Set the ostype property: <property name="ostype" value="${env.OSTYPE}"/>-->
+    <condition property="ostype" value="${env.OSTYPE}">
+        <isset property="env.OSTYPE" />
+    </condition>
+    <condition property="ostype" value="env.OSTYPE_inaccessable">
+        <not>
+            <isset property="env.OSTYPE" />
+        </not>
+    </condition>
 
    <path id="compile.classpath">
-      <pathelement location="${build}"/>
+      <pathelement location="${classes.dir}"/>
       <fileset dir="${lib}">
          <include name="*.jar"/>
       </fileset>
@@ -31,23 +43,21 @@
          <include name="javafx.fxml.jar"/>
          <include name="javafx.controls.jar"/>
       </fileset>
+      <fileset dir="${basedir}/lib">
+         <include name="json.jar"/>
+      </fileset>
    </path>
 
-   <target name="checkos">
-	<condition property="os" value="windows">
-		<os family="windows" />
-	</condition>
-	<condition property="os" value="unix">
-		<os family="unix" />
-	</condition>
-	<condition property="os" value="mac">
-		<os family="mac" />
-	</condition>
+   <target name="targets">
+      <echo message="Targets are clean, prepare, build.all, build.server, build.client, targets"/>
+      <echo message="base directory is: ${basedir}"/>
+      <echo message="ostype is ${ostype}"/>
+      <echo message="invoke java tcp server with: java -cp classes:lib/json.jar ser321.tcpjsonrpc.server.StudentCollectionTCPJsonRPCServer ${port}"/>
+      <echo message="invoke java client with: java -cp classes:lib/json.jar ser321.tcpjsonrpc.StudentCollectionClient ${host} ${port}"/>
    </target>
 
-   <target name="targets" depends="checkos">
-      <echo message="targets are clean, prepare, compile, server, client. "/>
-      <echo message="to run enter: ant execute -Domdbkey=${omdbkey} -DuserId=${userId} "/>
+   <target name="clean">
+      <delete dir="${classes.dir}" failonerror="false"/>
    </target>
 
    <target name="prepare">
@@ -55,7 +65,7 @@
       <tstamp/>
       <!-- Create the build directory structure used by compile -->
       <echo message="home defined as: ${home}" />
-      <mkdir dir="${build}" />
+      <mkdir dir="${classes.dir}"/>
       <!-- Platform identification -->
       <condition property="build.host.islinux">
         <and>
@@ -106,58 +116,41 @@
      </if>
    </target>
 
-   <target name="compile" depends="setup.javafx"
-           description="Compile Java sources">
-      <javac srcdir="${src}"
-             includeantruntime="false"
-             destdir="${build}">
-         <classpath refid="compile.classpath"/>
-      </javac>
+   <target name="build.all"
+           depends="clean,setup.javafx,build.server,build.client"
+           description="Clean then build java server, and java client"/>
+
+   <target name="build.server" depends="prepare"
+          description="Compile Java server sources">
+     <!-- Compile Java server classes as necessary -->
+     <echo message="tcp server: java -cp classes:lib/json.jar ser321.tcpjsonrpc.server.SeasonSeriesLibraryTCPJsonRPCServer ${port}"/>
+     <javac srcdir="${src.dir}/java/server"
+            destdir="${classes.dir}"
+            includeantruntime="false">
+        <classpath refid="compile.classpath"/>
+    </javac>
+   </target>
+   
+
+   <target name="build.client" depends="build.server"
+          description="Compile Java client sources">
+     <!-- Compile Java classes as necessary -->
+     <echo message="execute client: java -cp classes:lib/json.jar ser321.tcpjsonrpc.SeriesSeasonClient ${host} ${port}"/>
+     <javac srcdir="${src.dir}/java/client"
+            destdir="${classes.dir}"
+            includeantruntime="false">
+        <classpath refid="compile.classpath"/>
+     </javac>
    </target>
 
-   <target name="execute" depends="compile"
-           description="execute the sample mail client">
-      <java classname="ser321.assign2.lindquis.MediaLibraryApp"
-            fork="yes">
-         <arg value="${userId}"/> 
-         <arg value="${omdbkey}"/> 
-         <classpath refid="compile.classpath"/>
-         <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
-      </java>
-   </target>
-
-  <target name="client" depends="compile"
-           description="Start client">
-	<echo message="user.dir is: ${user.dir}"/>
-	<echo message="command line client: java -cp classes - RMIClient ${hostId} ${regPort}" />
-      <java classname="SeasonRMIClient"
-            fork="yes">
-	 <arg value="${hostId}"/>
-	 <arg value="${regPort}"/>
-         <arg value="${userId}"/> 
-         <arg value="${omdbkey}"/>
-         <classpath refid="compile.classpath"/>
-         <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
-      </java>
-   </target>
-
-   <target name="server" depends="compile"
+   <target name="server" depends="build.all"
            description="Using parallel task, start server and client">
     <parallel>
-	<exec dir="${basedir}"
-             executable="rmiregistry">
-         <arg value="${regPort}"/>
-         <env key="CLASSPATH" path="${basedir}/${build}"/>
-       </exec>
 	<sequential>
-	  <sleep seconds="10"/>
-	  <java classname="SeasonServerImpl"
+	  <sleep seconds="2"/>
+	  <java classname="SeriesSeasonLibraryTCPJsonRPCServer"
 		    fork="yes">
-    		 <sysproperty key="java.rmi.server.hostname" value="${hostId}"/>
-		 <arg value="${hostId}"/> 
-           	 <arg value="${regPort}"/>
-		 <arg value="${userId}"/> 
-		 <arg value="${omdbkey}"/> 
+           	 <arg value="${port}"/>
 		 <classpath refid="compile.classpath"/>
 		 <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
 	      </java>
@@ -165,9 +158,18 @@
     </parallel>
    </target>
 
-   <target name="clean">
-     <!-- Delete the ${build} and ${docs} directory trees -->
-     <delete dir="${build}" />
-     <delete dir="${javafxhome}"/>
+   <target name="java.client" depends="build.all"
+           description="Start client">
+	<echo message="user.dir is: ${user.dir}"/>
+      <java classname="SeriesSeasonClient"
+            fork="yes">
+	 <arg value="${host}"/>
+	 <arg value="${port}"/>
+         <arg value="${userId}"/> 
+         <arg value="${omdbkey}"/>
+         <classpath refid="compile.classpath"/>
+         <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
+      </java>
    </target>
+
 </project>
